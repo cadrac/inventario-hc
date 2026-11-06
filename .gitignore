@@ -1,0 +1,19 @@
+node_modules/
+dist/
+dev-dist/
+.env
+.env.local
+# Gerado a partir de firestore.rules.template (contém o código do grupo)
+firestore.rules
+# Chave de serviço do Firebase (NUNCA enviar ao GitHub)
+service-account.json
+*-firebase-adminsdk-*.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+teste-exportacao.xlsx
+# Planilha da entidade (lista de bens e valores): fica só no computador,
+# o repositório é público. Necessária apenas para o script de importação.
+inventario.ods
+rascunho.png

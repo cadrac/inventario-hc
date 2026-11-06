@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+.git
+.env
+.env.local
+service-account.json
+*-firebase-adminsdk-*.json
+*.log
+teste-exportacao.xlsx

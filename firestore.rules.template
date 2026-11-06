@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// Modelo das regras. NÃO edite firestore.rules diretamente: ele é gerado a partir
+// deste arquivo (npm run rules), trocando __ACCESS_CODE__ pelo código do grupo.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() {
+      return request.auth != null;
+    }
+
+    // Só quem entrou com o código do grupo tem um documento em /membros.
+    function membro() {
+      return logado() && exists(/databases/$(database)/documents/membros/$(request.auth.uid));
+    }
+
+    function nomeValido(n) {
+      return n in ['Pedro', 'Michele', 'Mércia', 'Carlos', 'Gabriel'];
+    }
+
+    function texto(t, max) {
+      return t is string && t.size() <= max;
+    }
+
+    function valorOk(v) {
+      return v == null || ((v is int || v is float) && v >= 0 && v < 1000000000);
+    }
+
+    // Campos que o modal de edição/adição grava.
+    function edicaoOk(d) {
+      return texto(d.especificacao, 500) && d.especificacao.size() > 0
+        && texto(d.qtd, 30)
+        && texto(d.serie, 120)
+        && valorOk(d.valor)
+        && texto(d.observacoes, 500)
+        && d.conservacaoNova in ['O', 'B', 'R', 'P', 'I']
+        && d.conferido == true
+        && nomeValido(d.editadoPor)
+        && d.editadoEm == request.time;
+    }
+
+    match /membros/{uid} {
+      allow read: if logado() && request.auth.uid == uid;
+      allow create, update: if logado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['codigo', 'nome', 'entrouEm'])
+        && request.resource.data.codigo == '__ACCESS_CODE__'
+        && nomeValido(request.resource.data.nome)
+        && request.resource.data.entrouEm == request.time;
+      allow delete: if false;
+    }
+
+    match /itens/{id} {
+      allow read: if membro();
+
+      // Edição: só os campos editáveis. Item, setor e data de aquisição ficam travados.
+      allow update: if membro()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+             'especificacao', 'qtd', 'serie', 'valor', 'observacoes',
+             'conservacaoNova', 'conferido', 'editadoPor', 'editadoEm'])
+        && edicaoOk(request.resource.data);
+
+      // Adição de objeto encontrado na visita.
+      allow create: if membro()
+        && request.resource.data.keys().hasOnly([
+             'novo', 'numero', 'comodo', 'comodoId', 'setorOriginal', 'dataAquisicao',
+             'conservacaoOriginal', 'especificacao', 'qtd', 'serie', 'valor', 'observacoes',
+             'conservacaoNova', 'conferido', 'editadoPor', 'editadoEm', 'criadoPor', 'criadoEm'])
+        && request.resource.data.novo == true
+        && request.resource.data.numero == null
+        && texto(request.resource.data.comodo, 100)
+        && texto(request.resource.data.comodoId, 100)
+        && request.resource.data.setorOriginal == request.resource.data.comodo
+        && request.resource.data.dataAquisicao == ''
+        && request.resource.data.conservacaoOriginal == null
+        && request.resource.data.criadoPor == request.resource.data.editadoPor
+        && request.resource.data.criadoEm == request.time
+        && edicaoOk(request.resource.data);
+
+      allow delete: if false;
+    }
+
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

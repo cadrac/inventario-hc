@@ -1,0 +1,92 @@
+# Uso local:  docker compose up --watch
+# Ferramentas: docker compose run --rm tools <comando>   (ver README.md)
+
+x-env: &env
+  ACCESS_CODE: ${ACCESS_CODE:-hora2026}
+
+services:
+  # Site (Vite) apontando para o emulador
+  web:
+    build: .
+    image: inventario-hc-dev
+    command: npm run dev
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_USE_EMULATOR: "true"
+      VITE_FIREBASE_API_KEY: demo-key
+      VITE_FIREBASE_AUTH_DOMAIN: demo-inventario.firebaseapp.com
+      VITE_FIREBASE_PROJECT_ID: demo-inventario
+      VITE_FIREBASE_STORAGE_BUCKET: ""
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ""
+      VITE_FIREBASE_APP_ID: demo-app
+    depends_on:
+      - emulators
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: sync
+          path: ./index.html
+          target: /app/index.html
+        - action: sync+restart
+          path: ./vite.config.js
+          target: /app/vite.config.js
+        - action: rebuild
+          path: ./package.json
+
+  # Firebase Emulator Suite (Firestore + Auth + Emulator UI)
+  emulators:
+    build: .
+    image: inventario-hc-dev
+    command: sh scripts/emuladores.sh
+    environment:
+      <<: *env
+    ports:
+      - "4000:4000"   # Emulator UI
+      - "8080:8080"   # Firestore
+      - "9099:9099"   # Auth
+      - "4400:4400"   # Hub (usado pela UI)
+      - "4500:4500"   # Logging (usado pela UI)
+      - "9150:9150"   # Websocket do Firestore na UI
+    volumes:
+      - emulator-data:/data
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./firestore.rules.template
+          target: /app/firestore.rules.template
+        - action: sync+restart
+          path: ./firebase.json
+          target: /app/firebase.json
+        - action: sync+restart
+          path: ./scripts
+          target: /app/scripts
+
+  # Ferramentas (importação, login, deploy de regras). Só roda com "docker compose run".
+  tools:
+    build: .
+    image: inventario-hc-dev
+    profiles: ["tools"]
+    working_dir: /app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *env
+      EMULATOR_HOST: emulators:8080
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - firebase-config:/root/.config
+    command: ["echo", "Use docker compose run --rm tools COMANDO"]
+
+volumes:
+  emulator-data:
+  firebase-config:
