@@ -76,7 +76,12 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
   }
 
   function confirmarExclusao() {
-    excluirItem(item, nome, motivo.trim().slice(0, 300)).catch(falhou);
+    const m = motivo.trim();
+    if (m.length < 3) {
+      setErros((x) => ({ ...x, motivo: 'Escreva o motivo da exclusão.' }));
+      return;
+    }
+    excluirItem(item, nome, m.slice(0, 300)).catch(falhou);
     avisar(`${nomeItem[0].toUpperCase() + nomeItem.slice(1)} foi para a lixeira.`);
     fechar();
   }
@@ -108,14 +113,21 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
                 </p>
               </div>
               <label className="campo">
-                <span>Motivo (opcional)</span>
+                <span>Motivo da exclusão (obrigatório)</span>
                 <textarea
                   rows={2}
                   value={motivo}
-                  onChange={(e) => setMotivo(e.target.value)}
+                  onChange={(e) => {
+                    setMotivo(e.target.value);
+                    if (erros.motivo) setErros((x) => ({ ...x, motivo: undefined }));
+                  }}
                   placeholder="ex.: lançado em duplicidade, item não existe mais…"
                   maxLength={300}
+                  required
+                  aria-invalid={!!erros.motivo}
+                  autoFocus
                 />
+                {erros.motivo && <em className="erro">{erros.motivo}</em>}
               </label>
             </div>
             <div className="modal-rodape">

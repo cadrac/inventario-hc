@@ -66,7 +66,14 @@ await espera('ler membro de outra pessoa', false, () => getDoc(doc(db, 'membros'
 console.log('Lixeira:');
 const outro = doc(db, 'itens', 'item-0119');
 const excluir = (excluido, extra = {}) => ({ excluido, excluidoPor: 'Michele', excluidoEm: serverTimestamp(), motivoExclusao: 'teste', ...extra });
-await espera('excluir item 119', true, () => updateDoc(outro, excluir(true)));
+await espera('excluir sem motivo', false, () => updateDoc(outro, excluir(true, { motivoExclusao: '' })));
+await espera('excluir com motivo só de espaços', false, () => updateDoc(outro, excluir(true, { motivoExclusao: '    ' })));
+await espera('histórico de exclusão sem motivo', false, () =>
+  setDoc(doc(collection(db, 'historico')), {
+    tipo: 'exclusao', itemId: 'item-0119', numero: 119, comodo: 'x', especificacao: 'x',
+    por: 'Michele', em: serverTimestamp(), mudancas: [], motivo: '',
+  }));
+await espera('excluir item 119 (com motivo)', true, () => updateDoc(outro, excluir(true)));
 await espera('editar item que está na lixeira', false, () => updateDoc(outro, edicao()));
 await espera('excluir de novo (já excluído)', false, () => updateDoc(outro, excluir(true)));
 await espera('excluir mudando a especificação junto', false, () => updateDoc(doc(db, 'itens', 'item-0120'), { ...excluir(true), especificacao: 'x' }));

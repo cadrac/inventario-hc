@@ -58,7 +58,9 @@ service cloud.firestore {
         && d.excluido != resource.data.get('excluido', false)
         && nomeValido(d.excluidoPor)
         && d.excluidoEm == request.time
-        && texto(d.motivoExclusao, 300);
+        && texto(d.motivoExclusao, 300)
+        // Excluir exige motivo (mínimo 3 letras); restaurar limpa o motivo.
+        && (d.excluido == false || d.motivoExclusao.trim().size() >= 3);
     }
 
     match /itens/{id} {
@@ -111,7 +113,8 @@ service cloud.firestore {
         && request.resource.data.em == request.time
         && request.resource.data.mudancas is list
         && request.resource.data.mudancas.size() <= 10
-        && texto(request.resource.data.motivo, 300);
+        && texto(request.resource.data.motivo, 300)
+        && (request.resource.data.tipo != 'exclusao' || request.resource.data.motivo.trim().size() >= 3);
       allow update, delete: if false;
     }
 
