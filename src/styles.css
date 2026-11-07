@@ -498,6 +498,21 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .log-mudancas .de { text-decoration: line-through; color: var(--texto-suave); }
 .log-mudancas .para { font-weight: 500; }
 
+/* ====== Equipe ====== */
+.equipe { list-style: none; margin: 0; padding: 0; }
+.pessoa { padding: 14px 16px; border-bottom: 1px solid var(--borda); display: flex; flex-direction: column; gap: 8px; }
+.pessoa:last-child { border-bottom: none; }
+.pessoa-cabecalho { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pessoa-cabecalho strong { font-size: 1rem; }
+.bolinha { width: 10px; height: 10px; border-radius: 50%; background: var(--borda-forte); flex: none; }
+.bolinha.pequena { width: 8px; height: 8px; }
+.bolinha.on { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-fundo); }
+.aparelhos { list-style: none; margin: 0 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.aparelhos li { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; flex-wrap: wrap; }
+.aparelho-nome { flex: 1; min-width: 0; }
+.aparelho-quando { color: var(--texto-suave); font-size: 0.8125rem; white-space: nowrap; }
+.aparelho-quando.on { color: var(--ok); font-weight: 500; }
+
 @media (max-width: 420px) {
   .status { font-size: 0.6875rem; padding: 3px 8px; }
   .botao-cons .nome { font-size: 0.625rem; }

@@ -9,6 +9,8 @@ import ModalItem from './ModalItem.jsx';
 import StatusConexao from './StatusConexao.jsx';
 import Lixeira from './Lixeira.jsx';
 import Historico from './Historico.jsx';
+import Equipe from './Equipe.jsx';
+import { usePresenca } from '../presenca.js';
 
 export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const { itens, excluidos, comodos, proximoNumero, pendentes, carregando, erro, doCache } = useItens();
@@ -19,6 +21,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const [aviso, setAviso] = useState('');
   const [exportando, setExportando] = useState(false);
 
+  usePresenca(nome);
   useEffect(() => guardar.gravar('inventario.comodo', comodoId), [comodoId]);
 
   const comodo = comodos?.find((c) => c.id === comodoId) || null;
@@ -137,6 +140,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
             ['itens', 'Itens'],
             ['historico', 'Histórico'],
             ['lixeira', `Lixeira${excluidos?.length ? ` (${excluidos.length})` : ''}`],
+            ['equipe', 'Equipe'],
           ].map(([id, rotulo]) => (
             <button
               key={id}
@@ -169,6 +173,8 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           <Lixeira excluidos={excluidos} nome={nome} avisar={setAviso} />
         ) : aba === 'historico' ? (
           <Historico comodoAtual={comodo} />
+        ) : aba === 'equipe' ? (
+          <Equipe />
         ) : itens.length === 0 && !excluidos.length ? (
           <div className="mensagem">Nenhum item no banco ainda. Rode a importação da planilha (veja o README).</div>
         ) : (

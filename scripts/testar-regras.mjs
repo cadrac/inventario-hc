@@ -93,5 +93,15 @@ await espera('registrar com nome fora da lista', false, () => setDoc(doc(collect
 await espera('registrar com data falsa', false, () => setDoc(doc(collection(db, 'historico')), log({ em: new Date(2020, 0, 1) })));
 await espera('registrar tipo inválido', false, () => setDoc(doc(collection(db, 'historico')), log({ tipo: 'apagar-tudo' })));
 
+console.log('Equipe (presença):');
+const presenca = (extra = {}) => ({ nome: 'Michele', aparelho: 'Android · Chrome', vistoEm: serverTimestamp(), ...extra });
+await espera('avisar presença deste aparelho', true, () => setDoc(doc(db, 'presenca', user.uid), presenca()));
+await espera('ler presenças', true, () => getDoc(doc(db, 'presenca', user.uid)));
+await espera('avisar presença com outro nome', false, () => setDoc(doc(db, 'presenca', user.uid), presenca({ nome: 'Pedro' })));
+await espera('avisar presença de outro aparelho', false, () => setDoc(doc(db, 'presenca', 'outro-uid'), presenca()));
+await espera('avisar presença com hora falsa', false, () => setDoc(doc(db, 'presenca', user.uid), presenca({ vistoEm: new Date(2030, 0, 1) })));
+await espera('guardar campo extra (ex.: localização)', false, () => setDoc(doc(db, 'presenca', user.uid), presenca({ local: 'x' })));
+await espera('apagar presença', false, () => deleteDoc(doc(db, 'presenca', user.uid)));
+
 console.log(falhas ? `\n${falhas} FALHA(S)` : '\nTodas as regras se comportaram como esperado.');
 process.exit(falhas ? 1 : 0);

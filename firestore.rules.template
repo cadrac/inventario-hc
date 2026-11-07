@@ -98,6 +98,18 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Presença (aba Equipe): cada aparelho só escreve a própria, com o mesmo nome
+    // usado para entrar e a hora do servidor. Todos os membros podem ler.
+    match /presenca/{uid} {
+      allow read: if membro();
+      allow create, update: if membro() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nome', 'aparelho', 'vistoEm'])
+        && request.resource.data.nome == get(/databases/$(database)/documents/membros/$(request.auth.uid)).data.nome
+        && texto(request.resource.data.aparelho, 60)
+        && request.resource.data.vistoEm == request.time;
+      allow delete: if false;
+    }
+
     // Histórico: qualquer membro registra, ninguém altera nem apaga.
     match /historico/{id} {
       allow read: if membro();
