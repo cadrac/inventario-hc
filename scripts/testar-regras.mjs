@@ -63,5 +63,28 @@ await espera('adicionar com número forçado', false, () =>
   }));
 await espera('ler membro de outra pessoa', false, () => getDoc(doc(db, 'membros', 'outro-uid')));
 
+console.log('Lixeira:');
+const outro = doc(db, 'itens', 'item-0119');
+const excluir = (excluido, extra = {}) => ({ excluido, excluidoPor: 'Michele', excluidoEm: serverTimestamp(), motivoExclusao: 'teste', ...extra });
+await espera('excluir item 119', true, () => updateDoc(outro, excluir(true)));
+await espera('editar item que está na lixeira', false, () => updateDoc(outro, edicao()));
+await espera('excluir de novo (já excluído)', false, () => updateDoc(outro, excluir(true)));
+await espera('excluir mudando a especificação junto', false, () => updateDoc(doc(db, 'itens', 'item-0120'), { ...excluir(true), especificacao: 'x' }));
+await espera('restaurar item 119', true, () => updateDoc(outro, excluir(false, { motivoExclusao: '' })));
+
+console.log('Histórico:');
+const log = (extra = {}) => ({
+  tipo: 'edicao', itemId: 'item-0118', numero: 118, comodo: 'Cantinho da saúde', especificacao: 'Divãs',
+  por: 'Michele', em: serverTimestamp(), mudancas: [{ campo: 'Qtd', de: '2', para: '3' }], motivo: '', ...extra,
+});
+const ref = doc(collection(db, 'historico'));
+await espera('registrar no histórico', true, () => setDoc(ref, log()));
+await espera('ler histórico', true, () => getDoc(ref));
+await espera('alterar registro do histórico', false, () => updateDoc(ref, { por: 'Pedro' }));
+await espera('apagar registro do histórico', false, () => deleteDoc(ref));
+await espera('registrar com nome fora da lista', false, () => setDoc(doc(collection(db, 'historico')), log({ por: 'Intruso' })));
+await espera('registrar com data falsa', false, () => setDoc(doc(collection(db, 'historico')), log({ em: new Date(2020, 0, 1) })));
+await espera('registrar tipo inválido', false, () => setDoc(doc(collection(db, 'historico')), log({ tipo: 'apagar-tudo' })));
+
 console.log(falhas ? `\n${falhas} FALHA(S)` : '\nTodas as regras se comportaram como esperado.');
 process.exit(falhas ? 1 : 0);

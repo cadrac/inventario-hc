@@ -7,10 +7,13 @@ import SeletorComodo from './SeletorComodo.jsx';
 import ListaItens from './ListaItens.jsx';
 import ModalItem from './ModalItem.jsx';
 import StatusConexao from './StatusConexao.jsx';
+import Lixeira from './Lixeira.jsx';
+import Historico from './Historico.jsx';
 
 export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
-  const { itens, comodos, proximoNumero, pendentes, carregando, erro, doCache } = useItens();
+  const { itens, excluidos, comodos, proximoNumero, pendentes, carregando, erro, doCache } = useItens();
   const [comodoId, setComodoId] = useState(() => guardar.ler('inventario.comodo'));
+  const [aba, setAba] = useState('itens'); // itens | lixeira | historico
   const [modal, setModal] = useState(null); // { item } para editar, { novo: true } para adicionar
   const [soPendentes, setSoPendentes] = useState(false);
   const [aviso, setAviso] = useState('');
@@ -34,7 +37,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
     setExportando(true);
     try {
       const { baixarPlanilha } = await import('../exportar-navegador.js');
-      await baixarPlanilha(itens);
+      await baixarPlanilha(itens, excluidos);
       setAviso('Planilha exportada.');
     } catch (e) {
       console.error(e);
@@ -46,6 +49,50 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
 
   const totalGeral = itens?.length || 0;
   const conferidosGeral = itens?.filter((i) => i.conferido).length || 0;
+
+  function conteudoItens() {
+    if (!comodo) {
+      return (
+        <div className="mensagem">
+          <p>
+            <strong>Escolha seu cômodo</strong> no seletor acima para ver os itens.
+          </p>
+          <p className="sub">
+            {conferidosGeral} de {totalGeral} itens conferidos no total.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <>
+        <div className="lista-cabecalho">
+          <div>
+            <h2>{comodo.nome}</h2>
+            <div className="progresso" aria-label={`${comodo.conferidos} de ${comodo.total} conferidos`}>
+              <div className="progresso-barra">
+                <div style={{ width: `${comodo.total ? (comodo.conferidos / comodo.total) * 100 : 0}%` }} />
+              </div>
+              <span>
+                {comodo.conferidos} de {comodo.total} conferidos
+              </span>
+            </div>
+          </div>
+          <label className="filtro">
+            <input type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} />
+            Só não conferidos
+          </label>
+        </div>
+
+        <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
+
+        <div className="rodape-acoes">
+          <button type="button" className="botao adicionar grande" onClick={() => setModal({ novo: true })}>
+            + Adicionar objeto a esta área
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="principal">
@@ -69,8 +116,33 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
         </div>
 
         <div className="topo-comodo">
-          <SeletorComodo comodos={comodos || []} valor={comodoId} aoEscolher={setComodoId} />
+          <SeletorComodo
+            comodos={comodos || []}
+            valor={comodoId}
+            aoEscolher={(id) => {
+              setComodoId(id);
+              setAba('itens');
+            }}
+          />
         </div>
+
+        <nav className="abas" aria-label="Seções">
+          {[
+            ['itens', 'Itens'],
+            ['historico', 'Histórico'],
+            ['lixeira', `Lixeira${excluidos?.length ? ` (${excluidos.length})` : ''}`],
+          ].map(([id, rotulo]) => (
+            <button
+              key={id}
+              type="button"
+              className={'aba' + (aba === id ? ' ativa' : '')}
+              aria-current={aba === id ? 'page' : undefined}
+              onClick={() => setAba(id)}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </nav>
       </header>
 
       <main className="conteudo">
@@ -87,47 +159,14 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           </div>
         ) : carregando ? (
           <div className="mensagem">Carregando itens…</div>
-        ) : itens.length === 0 ? (
-          <div className="mensagem">
-            Nenhum item no banco ainda. Rode a importação da planilha (veja o README).
-          </div>
-        ) : !comodo ? (
-          <div className="mensagem">
-            <p>
-              <strong>Escolha seu cômodo</strong> no seletor acima para ver os itens.
-            </p>
-            <p className="sub">
-              {conferidosGeral} de {totalGeral} itens conferidos no total.
-            </p>
-          </div>
+        ) : aba === 'lixeira' ? (
+          <Lixeira excluidos={excluidos} nome={nome} avisar={setAviso} />
+        ) : aba === 'historico' ? (
+          <Historico comodoAtual={comodo} />
+        ) : itens.length === 0 && !excluidos.length ? (
+          <div className="mensagem">Nenhum item no banco ainda. Rode a importação da planilha (veja o README).</div>
         ) : (
-          <>
-            <div className="lista-cabecalho">
-              <div>
-                <h2>{comodo.nome}</h2>
-                <div className="progresso" aria-label={`${comodo.conferidos} de ${comodo.total} conferidos`}>
-                  <div className="progresso-barra">
-                    <div style={{ width: `${(comodo.conferidos / comodo.total) * 100}%` }} />
-                  </div>
-                  <span>
-                    {comodo.conferidos} de {comodo.total} conferidos
-                  </span>
-                </div>
-              </div>
-              <label className="filtro">
-                <input type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} />
-                Só não conferidos
-              </label>
-            </div>
-
-            <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
-
-            <div className="rodape-acoes">
-              <button type="button" className="botao adicionar grande" onClick={() => setModal({ novo: true })}>
-                + Adicionar objeto a esta área
-              </button>
-            </div>
-          </>
+          conteudoItens()
         )}
       </main>
 

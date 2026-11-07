@@ -2,7 +2,7 @@
 //   docker compose run --rm tools npm run test:export
 import ExcelJS from 'exceljs';
 import { lerInventario } from './ods.mjs';
-import { adicionarRegistro, montarPlanilha, ordenarParaExportar } from '../src/exportar.js';
+import { adicionarExcluidos, adicionarHistorico, adicionarRegistro, montarPlanilha, ordenarParaExportar } from '../src/exportar.js';
 
 const itens = await lerInventario('inventario.ods');
 const agora = new Date();
@@ -15,9 +15,20 @@ itens.push({
   conservacaoOriginal: null, conservacaoNova: 'O', conferido: true, editadoPor: 'Michele', editadoEm: agora,
 });
 
-const ordem = ordenarParaExportar(itens);
+// Um item excluído (vai para a aba "Excluídos", não para a oficial)
+const excluido = itens.find((i) => i.numero === 2);
+Object.assign(excluido, { excluido: true, excluidoPor: 'Gabriel', excluidoEm: agora, motivoExclusao: 'teste' });
+const ativos = itens.filter((i) => !i.excluido);
+
+const ordem = ordenarParaExportar(ativos);
 const wb = montarPlanilha(ExcelJS, ordem);
 adicionarRegistro(wb, ordem);
+adicionarExcluidos(wb, [excluido]);
+adicionarHistorico(wb, [
+  { tipo: 'conferencia', numero: 1, comodo: 'Presidência', especificacao: 'Mesa', por: 'Pedro', em: agora, mudancas: [{ campo: 'Conservação 11/2026', de: '—', para: 'B Bom' }], motivo: '' },
+  { tipo: 'exclusao', numero: 2, comodo: 'Presidência', especificacao: 'Conexão', por: 'Gabriel', em: agora, mudancas: [], motivo: 'teste' },
+]);
+console.log('Abas:', wb.worksheets.map((w) => w.name).join(' | '));
 await wb.xlsx.writeFile('teste-exportacao.xlsx');
 
 // Confere lendo de volta

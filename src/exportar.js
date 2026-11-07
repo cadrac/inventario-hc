@@ -140,6 +140,59 @@ export function ordenarParaExportar(itens) {
   return [...originais, ...novos];
 }
 
+const paraData = (t) => (t?.toDate ? t.toDate() : t instanceof Date ? t : null);
+
+/** Aba com os itens que foram para a lixeira (não entram na aba oficial). */
+export function adicionarExcluidos(wb, excluidos) {
+  const ws = wb.addWorksheet('Excluídos');
+  ws.columns = [
+    { header: 'ITEM', width: 8 },
+    { header: 'CÔMODO', width: 32 },
+    { header: 'ESPECIFICAÇÃO', width: 44 },
+    { header: 'QT.', width: 8 },
+    { header: 'VALOR TOTAL', width: 16 },
+    { header: 'EXCLUÍDO POR', width: 14 },
+    { header: 'EM', width: 18 },
+    { header: 'MOTIVO', width: 50 },
+  ];
+  ws.getRow(1).font = { bold: true };
+  for (const it of excluidos) {
+    const em = paraData(it.excluidoEm);
+    const row = ws.addRow([it.numero ?? 's/nº', it.comodo, it.especificacao, it.qtd || '', it.valor ?? null, it.excluidoPor || '', em, it.motivoExclusao || '']);
+    row.getCell(5).numFmt = '"R$" #,##0.00';
+    if (em) row.getCell(7).numFmt = 'dd/mm/yyyy hh:mm';
+  }
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+}
+
+/** Aba com o histórico completo (log). */
+export function adicionarHistorico(wb, entradas) {
+  const ROTULOS = { conferencia: 'Conferência', edicao: 'Edição', adicao: 'Adição', exclusao: 'Exclusão', restauracao: 'Restauração' };
+  const ws = wb.addWorksheet('Histórico');
+  ws.columns = [
+    { header: 'QUANDO', width: 18 },
+    { header: 'QUEM', width: 12 },
+    { header: 'AÇÃO', width: 14 },
+    { header: 'ITEM', width: 8 },
+    { header: 'CÔMODO', width: 30 },
+    { header: 'ESPECIFICAÇÃO', width: 40 },
+    { header: 'ALTERAÇÕES / MOTIVO', width: 70 },
+  ];
+  ws.getRow(1).font = { bold: true };
+  const ordem = [...entradas].sort((a, b) => (paraData(a.em)?.getTime() || 0) - (paraData(b.em)?.getTime() || 0));
+  for (const e of ordem) {
+    const em = paraData(e.em);
+    const detalhes = [
+      ...(e.mudancas || []).map((m) => `${m.campo}: ${m.de} → ${m.para}`),
+      e.motivo ? `Motivo: ${e.motivo}` : '',
+    ].filter(Boolean).join('; ');
+    const row = ws.addRow([em, e.por, ROTULOS[e.tipo] || e.tipo, e.numero ?? 's/nº', e.comodo, e.especificacao, detalhes]);
+    if (em) row.getCell(1).numFmt = 'dd/mm/yyyy hh:mm';
+    row.getCell(7).alignment = { wrapText: true, vertical: 'top' };
+  }
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+}
+
 /** Segunda aba: quem conferiu o quê e quando (não entra no layout oficial). */
 export function adicionarRegistro(wb, itens) {
   const ws = wb.addWorksheet('Registro da visita');

@@ -44,18 +44,26 @@ export function useItens() {
       .filter((d) => d.novo)
       .sort((a, b) => ms(a.criadoEm) - ms(b.criadoEm) || a.id.localeCompare(b.id))
       .map((d, i) => ({ ...d, numero: maior + i + 1, numeroProvisorio: d.pendente }));
+    // Itens excluídos continuam com o número deles (os números nunca mudam),
+    // mas saem da lista, dos contadores e da planilha.
     const todos = [...originais, ...novos];
+    const ativos = todos.filter((d) => !d.excluido);
+    const excluidos = todos
+      .filter((d) => d.excluido)
+      .sort((a, b) => ms(b.excluidoEm) - ms(a.excluidoEm));
 
     // Cômodos na ordem em que aparecem na planilha
     const comodos = new Map();
     for (const it of todos) {
       if (!comodos.has(it.comodoId)) comodos.set(it.comodoId, { id: it.comodoId, nome: it.comodo, total: 0, conferidos: 0 });
+      if (it.excluido) continue;
       const c = comodos.get(it.comodoId);
       c.total++;
       if (it.conferido) c.conferidos++;
     }
     return {
-      itens: todos,
+      itens: ativos,
+      excluidos,
       comodos: [...comodos.values()],
       proximoNumero: maior + novos.length + 1,
       pendentes: docs.filter((d) => d.pendente).length,

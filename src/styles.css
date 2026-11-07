@@ -421,6 +421,71 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   animation: subir 0.2s ease-out;
 }
 
+/* ====== Campo de moeda ====== */
+.campo-moeda {
+  display: flex; align-items: center;
+  border: 1px solid var(--borda-forte); border-radius: var(--raio); background: var(--superficie);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.campo-moeda:focus-within { border-color: var(--texto); box-shadow: 0 0 0 3px color-mix(in srgb, var(--anel) 25%, transparent); }
+.campo-moeda.invalido { border-color: var(--erro); }
+.campo-moeda .prefixo { padding: 0 0 0 12px; color: var(--texto-suave); font-family: var(--fonte-mono); font-size: 1rem; }
+.campo .campo-moeda input { border: none; box-shadow: none; background: transparent; padding-left: 8px; }
+.campo .campo-moeda input:focus { box-shadow: none; }
+
+/* ====== Botões de exclusão ====== */
+.botao.perigo { background: var(--erro); color: #ffffff; }
+:root[data-tema='escuro'] .botao.perigo { color: #2f0607; }
+.botao.perigo-suave { background: transparent; color: var(--erro); border-color: transparent; padding: 0 12px; }
+@media (hover: hover) {
+  .botao.perigo:hover { filter: brightness(1.08); }
+  .botao.perigo-suave:hover { background: var(--erro-fundo); }
+}
+.modal-rodape.com-excluir { grid-template-columns: auto 1fr 2fr; }
+@media (max-width: 420px) { .texto-excluir { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+.confirmar-exclusao { display: flex; flex-direction: column; gap: 10px; }
+.confirmar-exclusao p { margin: 0; }
+
+/* ====== Abas (Itens / Histórico / Lixeira) ====== */
+.abas { display: flex; gap: 4px; margin: 0 -4px -12px; overflow-x: auto; scrollbar-width: none; }
+@media (min-width: 900px) { .abas { grid-column: 1 / -1; margin-bottom: -16px; } }
+.aba {
+  position: relative; min-height: 44px; padding: 0 12px; border: none; background: none; cursor: pointer;
+  color: var(--texto-suave); font-size: 0.875rem; font-weight: 500; white-space: nowrap;
+}
+@media (hover: hover) { .aba:hover { color: var(--texto); } }
+.aba.ativa { color: var(--texto); }
+.aba.ativa::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--texto); border-radius: 2px; }
+
+/* ====== Painéis (Lixeira e Histórico) ====== */
+.painel { display: flex; flex-direction: column; gap: 12px; }
+.painel-cabecalho { display: flex; flex-direction: column; gap: 8px; }
+.painel-cabecalho h2 { font-size: 1.25rem; }
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filtros select {
+  min-height: 40px; padding: 0 10px; border-radius: var(--raio); border: 1px solid var(--borda-forte);
+  background: var(--superficie); color: var(--texto); font-size: 0.875rem;
+}
+.cartao.excluido .espec { text-decoration: line-through; text-decoration-color: var(--texto-suave); }
+.excluido-info { color: var(--erro); }
+.motivo { font-size: 0.875rem; color: var(--texto-suave); font-style: italic; }
+
+.log { list-style: none; margin: 0; padding: 0; }
+.log-item { padding: 12px 16px; border-bottom: 1px solid var(--borda); display: flex; flex-direction: column; gap: 4px; font-size: 0.9375rem; }
+.log-item:last-child { border-bottom: none; }
+.log-linha { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.log-tipo { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 999px; background: var(--superficie-2); color: var(--texto-suave); }
+.log-tipo.t-conferencia { background: var(--ok-fundo); color: var(--ok); }
+.log-tipo.t-edicao { background: var(--destaque-fundo); color: var(--destaque); }
+.log-tipo.t-adicao { background: var(--destaque-fundo); color: var(--destaque); }
+.log-tipo.t-exclusao { background: var(--erro-fundo); color: var(--erro); }
+.log-tipo.t-restauracao { background: var(--alerta-fundo); color: var(--alerta); }
+.log-quando { font-size: 0.75rem; color: var(--texto-suave); font-family: var(--fonte-mono); }
+.log-mudancas { margin: 4px 0 0; padding: 8px 10px; list-style: none; background: var(--superficie-2); border-radius: var(--raio); font-size: 0.8125rem; display: flex; flex-direction: column; gap: 2px; }
+.log-campo { color: var(--texto-suave); }
+.log-mudancas .de { text-decoration: line-through; color: var(--texto-suave); }
+.log-mudancas .para { font-weight: 500; }
+
 @media (max-width: 420px) {
   .status { font-size: 0.6875rem; padding: 3px 8px; }
   .botao-cons .nome { font-size: 0.625rem; }

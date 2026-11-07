@@ -50,15 +50,31 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Excluir (vai para a lixeira) ou restaurar: só mexe nestes 4 campos.
+    function exclusaoOk() {
+      let d = request.resource.data;
+      return d.diff(resource.data).affectedKeys().hasOnly(['excluido', 'excluidoPor', 'excluidoEm', 'motivoExclusao'])
+        && d.excluido is bool
+        && d.excluido != resource.data.get('excluido', false)
+        && nomeValido(d.excluidoPor)
+        && d.excluidoEm == request.time
+        && texto(d.motivoExclusao, 300);
+    }
+
     match /itens/{id} {
       allow read: if membro();
 
       // Edição: só os campos editáveis. Item, setor e data de aquisição ficam travados.
-      allow update: if membro()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-             'especificacao', 'qtd', 'serie', 'valor', 'observacoes',
-             'conservacaoNova', 'conferido', 'editadoPor', 'editadoEm'])
-        && edicaoOk(request.resource.data);
+      // Item na lixeira não pode ser editado (precisa restaurar antes).
+      // Ou então: exclusão/restauração.
+      allow update: if membro() && (
+        (resource.data.get('excluido', false) == false
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+               'especificacao', 'qtd', 'serie', 'valor', 'observacoes',
+               'conservacaoNova', 'conferido', 'editadoPor', 'editadoEm'])
+          && edicaoOk(request.resource.data))
+        || exclusaoOk()
+      );
 
       // Adição de objeto encontrado na visita.
       allow create: if membro()
@@ -78,6 +94,25 @@ service cloud.firestore {
         && edicaoOk(request.resource.data);
 
       allow delete: if false;
+    }
+
+    // Histórico: qualquer membro registra, ninguém altera nem apaga.
+    match /historico/{id} {
+      allow read: if membro();
+      allow create: if membro()
+        && request.resource.data.keys().hasOnly([
+             'tipo', 'itemId', 'numero', 'comodo', 'especificacao', 'por', 'em', 'mudancas', 'motivo'])
+        && request.resource.data.tipo in ['conferencia', 'edicao', 'adicao', 'exclusao', 'restauracao']
+        && texto(request.resource.data.itemId, 100)
+        && (request.resource.data.numero == null || request.resource.data.numero is int)
+        && texto(request.resource.data.comodo, 100)
+        && texto(request.resource.data.especificacao, 500)
+        && nomeValido(request.resource.data.por)
+        && request.resource.data.em == request.time
+        && request.resource.data.mudancas is list
+        && request.resource.data.mudancas.size() <= 10
+        && texto(request.resource.data.motivo, 300);
+      allow update, delete: if false;
     }
 
     match /{documento=**} {
