@@ -139,8 +139,8 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           {[
             ['itens', 'Itens'],
             ['historico', 'Histórico'],
-            ['lixeira', `Lixeira${excluidos?.length ? ` (${excluidos.length})` : ''}`],
             ['equipe', 'Equipe'],
+            ['lixeira', `Lixeira${excluidos?.length ? ` (${excluidos.length})` : ''}`],
           ].map(([id, rotulo]) => (
             <button
               key={id}
