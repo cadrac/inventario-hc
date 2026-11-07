@@ -20,6 +20,12 @@ const CONFERIDO = 'Conferido  por:\n\n_______________________________\n\nRG:\nCP
 const LARGURAS = [22, 32, 34, 22, 22, 34, 11, 11, 11, 11, 11, 27, 34, 6, 10, 10, 10, 9, 9];
 const ESPACO_ATE_RODAPE = 15; // na original: último item na linha 285, rodapé na 300
 
+// Formatação da original: Arial, título 36 negrito, subtítulo 18 negrito, tabela 12.
+const FONTE = 'Arial';
+const ALTURA_LINHA_1 = 105; // pt, como na original
+const ALTURA_LINHA_2 = 117;
+const ALTURA_TABELA = 34.5;
+
 const fino = { style: 'thin', color: { argb: 'FF000000' } };
 const BORDA = { top: fino, left: fino, bottom: fino, right: fino };
 const centro = { horizontal: 'center', vertical: 'middle', wrapText: true };
@@ -34,9 +40,11 @@ function dataExcel(texto) {
 
 /**
  * @param ExcelJS  módulo exceljs
- * @param itens    itens na ordem final (originais pela linha, depois os novos 279, 280...)
+ * @param itens    itens na ordem final (originais pela linha, depois os novos 279, 280...),
+ *                 sem os excluídos (eles vão só para a aba "Excluídos")
+ * @param opcoes   { logoBase64 } — logo da Hora da Criança (PNG em base64), opcional
  */
-export function montarPlanilha(ExcelJS, itens) {
+export function montarPlanilha(ExcelJS, itens, { logoBase64 } = {}) {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Inventário Hora da Criança';
   wb.created = new Date();
@@ -45,40 +53,52 @@ export function montarPlanilha(ExcelJS, itens) {
   });
   ws.columns = LARGURAS.map((width) => ({ width }));
 
-  // Cabeçalho
+  // ---- Cabeçalho, como na original ----
   ws.mergeCells('A1:M1');
-  ws.getCell('A1').value = TITULO;
-  ws.getCell('A1').font = { bold: true, size: 14 };
-  ws.getCell('A1').alignment = centro;
-  ws.getRow(1).height = 24;
+  const c1 = ws.getCell('A1');
+  c1.value = TITULO.trim();
+  c1.font = { name: FONTE, bold: true, size: 36 };
+  c1.alignment = centro;
+  c1.border = { top: fino, left: fino, right: fino };
+  ws.getRow(1).height = ALTURA_LINHA_1;
 
   ws.mergeCells('A2:M2');
-  ws.getCell('A2').value = SUBTITULO;
-  ws.getCell('A2').font = { bold: true, size: 12 };
-  ws.getCell('A2').alignment = centro;
-  ws.getRow(2).height = 66;
+  const c2 = ws.getCell('A2');
+  c2.value = SUBTITULO;
+  c2.font = { name: FONTE, bold: true, size: 18 };
+  c2.alignment = centro;
+  c2.border = { bottom: fino, left: fino, right: fino };
+  ws.getRow(2).height = ALTURA_LINHA_2;
+
+  // Logo nos dois cantos (A1 e M1), como na original
+  if (logoBase64) {
+    const img = wb.addImage({ base64: logoBase64, extension: 'png' });
+    const tam = { width: 190, height: 120 }; // px (proporção da logo)
+    ws.addImage(img, { tl: { col: 0.12, row: 0.3 }, ext: tam, editAs: 'oneCell' });
+    ws.addImage(img, { tl: { col: 12.08, row: 0.3 }, ext: tam, editAs: 'oneCell' });
+  }
 
   ws.mergeCells('G4:K4');
   ws.getCell('G4').value = 'CONSERVAÇÃO';
   ws.mergeCells('O4:S4');
   ws.getCell('O4').value = 'ATUALIZAÇÃO DO STATUS DE CONSERVAÇÃO - 11/2026';
-  ws.getRow(4).height = 30;
+  ws.getRow(4).height = ALTURA_TABELA;
 
   const cab = ['ITEM', 'SETOR', 'ESPECIFICAÇÃO', 'QT.', 'Nº DE SERIE', 'DATA DE AQUISIÇÃO', ...LETRAS, 'VALOR TOTAL', 'OBSERVAÇÕES', null, ...LETRAS];
   ws.getRow(5).values = cab;
+  ws.getRow(5).height = ALTURA_TABELA;
 
   for (const r of [4, 5]) {
     ws.getRow(r).eachCell({ includeEmpty: true }, (cell, col) => {
       if (col === 14 || col > 19) return;
       if (r === 4 && !((col >= 7 && col <= 11) || col >= 15)) return;
-      cell.font = { bold: true };
+      cell.font = { name: FONTE, bold: true, size: 12 };
       cell.alignment = centro;
       cell.border = BORDA;
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
     });
   }
 
-  // Itens
+  // ---- Itens ----
   let r = 6;
   for (const it of itens) {
     const row = ws.getRow(r);
@@ -98,10 +118,12 @@ export function montarPlanilha(ExcelJS, itens) {
       ...LETRAS.map((l) => (it.conservacaoNova === l ? 'x' : null)),
     ];
     row.values = valores;
+    row.height = ALTURA_TABELA;
     for (let c = 1; c <= 19; c++) {
       if (c === 14) continue;
       const cell = row.getCell(c);
       cell.border = BORDA;
+      cell.font = { name: FONTE, size: 12 };
       cell.alignment = { vertical: 'middle', wrapText: true, horizontal: c === 1 || c === 4 || (c >= 6 && c <= 11) || c >= 15 ? 'center' : undefined };
     }
     if (data) row.getCell(6).numFmt = 'dd/mm/yyyy';
@@ -125,11 +147,11 @@ export function montarPlanilha(ExcelJS, itens) {
     const cell = ws.getCell(faixa.split(':')[0]);
     cell.value = texto;
     cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+    cell.font = { name: FONTE, size: 12 };
   }
   ws.getRow(f).height = 90;
   for (let i = 1; i <= 4; i++) ws.getRow(f + i).height = 26;
 
-  ws.views = [{ state: 'frozen', ySplit: 5 }];
   return wb;
 }
 
@@ -162,7 +184,6 @@ export function adicionarExcluidos(wb, excluidos) {
     row.getCell(5).numFmt = '"R$" #,##0.00';
     if (em) row.getCell(7).numFmt = 'dd/mm/yyyy hh:mm';
   }
-  ws.views = [{ state: 'frozen', ySplit: 1 }];
 }
 
 /** Aba com o histórico completo (log). */
@@ -190,7 +211,6 @@ export function adicionarHistorico(wb, entradas) {
     if (em) row.getCell(1).numFmt = 'dd/mm/yyyy hh:mm';
     row.getCell(7).alignment = { wrapText: true, vertical: 'top' };
   }
-  ws.views = [{ state: 'frozen', ySplit: 1 }];
 }
 
 /** Segunda aba: quem conferiu o quê e quando (não entra no layout oficial). */
@@ -232,5 +252,4 @@ export function adicionarRegistro(wb, itens) {
     ]);
     if (em) row.getCell(9).numFmt = 'dd/mm/yyyy hh:mm';
   }
-  ws.views = [{ state: 'frozen', ySplit: 1 }];
 }

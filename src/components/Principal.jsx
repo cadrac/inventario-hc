@@ -66,7 +66,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
     return (
       <>
         <div className="lista-cabecalho">
-          <div>
+          <div className="lista-titulo">
             <h2>{comodo.nome}</h2>
             <div className="progresso" aria-label={`${comodo.conferidos} de ${comodo.total} conferidos`}>
               <div className="progresso-barra">
@@ -77,19 +77,25 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
               </span>
             </div>
           </div>
-          <label className="filtro">
-            <input type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} />
-            Só não conferidos
-          </label>
-        </div>
-
-        <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
-
-        <div className="rodape-acoes">
-          <button type="button" className="botao adicionar grande" onClick={() => setModal({ novo: true })}>
-            + Adicionar objeto a esta área
+          <button
+            type="button"
+            className="botao adicionar"
+            onClick={() => setModal({ novo: true })}
+            aria-label={`Adicionar objeto em ${comodo.nome}`}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+            <span className="rotulo-adicionar">Adicionar ao cômodo</span>
           </button>
         </div>
+
+        <label className="filtro">
+          <input type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} />
+          Só não conferidos
+        </label>
+
+        <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
       </>
     );
   }

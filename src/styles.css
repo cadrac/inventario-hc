@@ -258,7 +258,19 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 /* Conteúdo */
 .conteudo { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 @media (min-width: 900px) { .conteudo { padding: 20px 24px; } }
-.lista-cabecalho { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.lista-cabecalho { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.lista-titulo { min-width: 0; }
+.lista-titulo h2 { overflow-wrap: anywhere; }
+.lista-cabecalho .botao.adicionar { flex: none; min-height: 48px; padding: 0 16px; font-weight: 600; }
+/* Celular: só o "+" (botão quadrado). Telas maiores: "+ Adicionar ao cômodo". */
+@media (max-width: 599px) {
+  .lista-cabecalho .botao.adicionar { width: 48px; height: 48px; padding: 0; }
+  .lista-cabecalho .botao.adicionar svg { width: 22px; height: 22px; }
+  .rotulo-adicionar { display: none; }
+}
+.conteudo > .filtro { align-self: flex-start; margin: -6px 0 -4px; }
+.progresso span { white-space: nowrap; }
+@media (max-width: 480px) { .progresso-barra { width: 56px; } }
 .lista-cabecalho h2 { font-size: 1.25rem; }
 .progresso { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 0.875rem; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
 .progresso-barra { width: 120px; height: 6px; border-radius: 999px; background: var(--superficie-2); overflow: hidden; }

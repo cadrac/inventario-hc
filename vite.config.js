@@ -8,7 +8,7 @@ export default defineConfig({
     // Guarda o app no aparelho: abre mesmo sem internet depois do primeiro acesso.
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icone.svg'],
+      includeAssets: ['icone.svg', 'logo-hc.png'],
       manifest: {
         name: 'Inventário Hora da Criança',
         short_name: 'Inventário HC',
@@ -21,7 +21,7 @@ export default defineConfig({
       },
       workbox: {
         // Fontes: só os subconjuntos latinos (português), para funcionar offline.
-        globPatterns: ['**/*.{js,css,html,svg}', '**/*latin*.woff2'],
+        globPatterns: ['**/*.{js,css,html,svg,png}', '**/*latin*.woff2'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
     }),
