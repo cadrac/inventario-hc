@@ -7,7 +7,7 @@ import { BotoesConservacao, SeloConservacao } from './Conservacao.jsx';
 /** Modal de editar (item) ou adicionar (item vazio). */
 export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, avisar }) {
   const novo = !item;
-  const [f, setF] = useState(() => ({
+  const [inicial] = useState(() => ({
     especificacao: item?.especificacao || '',
     qtd: item?.qtd || (novo ? '1' : ''),
     serie: item?.serie || '',
@@ -15,9 +15,16 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
     observacoes: item?.observacoes || '',
     conservacaoNova: item?.conservacaoNova || null,
   }));
+  const [f, setF] = useState(inicial);
   const [erros, setErros] = useState({});
-  const fecharRef = useRef(fechar);
-  fecharRef.current = fechar;
+
+  // Não perder o que foi digitado: pergunta antes de fechar com alterações.
+  const alterado = Object.keys(inicial).some((k) => inicial[k] !== f[k]);
+  const tentarFechar = () => {
+    if (!alterado || window.confirm('Descartar as alterações deste item?')) fechar();
+  };
+  const fecharRef = useRef(tentarFechar);
+  fecharRef.current = tentarFechar;
 
   const mudar = (campo) => (e) => setF((v) => ({ ...v, [campo]: e.target.value }));
 
@@ -84,11 +91,11 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
   const titulo = novo ? 'Adicionar objeto' : `Editar item ${item.numero ?? 's/nº'}`;
 
   return (
-    <div className="modal-fundo" onPointerDown={(e) => e.target === e.currentTarget && fechar()}>
+    <div className="modal-fundo" onPointerDown={(e) => e.target === e.currentTarget && tentarFechar()}>
       <form className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo" onSubmit={salvar}>
         <div className="modal-cabecalho">
           <h2 id="modal-titulo">{titulo}</h2>
-          <button type="button" className="botao-icone" onClick={fechar} aria-label="Fechar">
+          <button type="button" className="botao-icone" onClick={tentarFechar} aria-label="Fechar">
             ✕
           </button>
         </div>
@@ -118,11 +125,11 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
           <div className="campos-lado">
             <label className="campo">
               <span>Qtd</span>
-              <input type="text" value={f.qtd} onChange={mudar('qtd')} placeholder="ex.: 2, 10mil, 15cx" />
+              <input type="text" className="mono" spellCheck={false} autoComplete="off" value={f.qtd} onChange={mudar('qtd')} placeholder="ex.: 2, 10mil, 15cx" />
             </label>
             <label className="campo">
               <span>Nº de série</span>
-              <input type="text" value={f.serie} onChange={mudar('serie')} />
+              <input type="text" className="mono" spellCheck={false} autoComplete="off" autoCapitalize="characters" value={f.serie} onChange={mudar('serie')} />
             </label>
           </div>
 
@@ -148,7 +155,7 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
 
           <label className="campo">
             <span>Valor total (R$)</span>
-            <input type="text" inputMode="decimal" value={f.valor} onChange={mudar('valor')} placeholder="ex.: 1.250,00" />
+            <input type="text" inputMode="decimal" className="mono" autoComplete="off" value={f.valor} onChange={mudar('valor')} placeholder="ex.: 1.250,00" />
             {erros.valor && <em className="erro">{erros.valor}</em>}
           </label>
 
@@ -159,7 +166,7 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
         </div>
 
         <div className="modal-rodape">
-          <button type="button" className="botao secundario" onClick={fechar}>
+          <button type="button" className="botao secundario" onClick={tentarFechar}>
             Cancelar
           </button>
           <button type="submit" className="botao primario">

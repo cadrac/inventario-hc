@@ -81,9 +81,9 @@ export default function ListaItens({ itens, aoEditar }) {
                   <div className="espec">{it.especificacao}</div>
                   <Situacao item={it} />
                 </td>
-                <td>{it.qtd || '—'}</td>
+                <td className="mono">{it.qtd || "—"}</td>
                 <td>{it.serie || '—'}</td>
-                <td>{it.dataAquisicao || '—'}</td>
+                <td className="data">{it.dataAquisicao || "—"}</td>
                 <td>
                   <Conservacao item={it} />
                 </td>
@@ -120,7 +120,7 @@ export default function ListaItens({ itens, aoEditar }) {
             <dl className="cartao-dados">
               <div>
                 <dt>Qtd</dt>
-                <dd>{it.qtd || '—'}</dd>
+                <dd className="mono">{it.qtd || "—"}</dd>
               </div>
               <div>
                 <dt>Nº de série</dt>
@@ -128,11 +128,11 @@ export default function ListaItens({ itens, aoEditar }) {
               </div>
               <div>
                 <dt>Aquisição</dt>
-                <dd>{it.dataAquisicao || '—'}</dd>
+                <dd className="data">{it.dataAquisicao || "—"}</dd>
               </div>
               <div>
                 <dt>Valor total</dt>
-                <dd>{formatarValor(it.valor)}</dd>
+                <dd className="mono">{formatarValor(it.valor)}</dd>
               </div>
               <div className="largo">
                 <dt>Conservação</dt>

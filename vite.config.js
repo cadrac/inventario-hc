@@ -15,12 +15,13 @@ export default defineConfig({
         lang: 'pt-BR',
         start_url: '/',
         display: 'standalone',
-        background_color: '#f6f7f9',
-        theme_color: '#1d4ed8',
+        background_color: '#ffffff',
+        theme_color: '#0a0a0a',
         icons: [{ src: 'icone.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg}'],
+        // Fontes: só os subconjuntos latinos (português), para funcionar offline.
+        globPatterns: ['**/*.{js,css,html,svg}', '**/*latin*.woff2'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
     }),
