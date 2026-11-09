@@ -47,11 +47,11 @@ function Situacao({ item }) {
   return <span className="situacao a-conferir">Não conferido</span>;
 }
 
-export default function ListaItens({ itens, aoEditar }) {
+export default function ListaItens({ itens, aoEditar, vazio }) {
   const largo = useLargo();
 
   if (!itens.length) {
-    return <div className="lista vazia">Nenhum item para mostrar neste cômodo.</div>;
+    return <div className="lista vazia">{vazio || 'Nenhum item para mostrar neste cômodo.'}</div>;
   }
 
   if (largo) {

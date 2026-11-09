@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { normalizarBusca } from '../util.js';
+import NomeComodo from './NomeComodo.jsx';
 
 /** Seletor "Escolha seu cômodo" com busca. */
 export default function SeletorComodo({ comodos, valor, aoEscolher }) {
@@ -46,7 +47,7 @@ export default function SeletorComodo({ comodos, valor, aoEscolher }) {
         aria-labelledby="rotulo-comodo"
         onClick={() => setAberto((a) => !a)}
       >
-        <span className="seletor-valor">{atual ? atual.nome : 'Selecione…'}</span>
+        <span className="seletor-valor">{atual ? <NomeComodo nome={atual.nome} /> : 'Selecione…'}</span>
         {atual && (
           <span className={'contador' + (atual.conferidos === atual.total ? ' completo' : '')}>
             {atual.conferidos}/{atual.total}
@@ -80,7 +81,7 @@ export default function SeletorComodo({ comodos, valor, aoEscolher }) {
                   className={'seletor-opcao' + (c.id === valor ? ' ativa' : '')}
                   onClick={() => escolher(c.id)}
                 >
-                  <span>{c.nome}</span>
+                  <span><NomeComodo nome={c.nome} /></span>
                   <span className={'contador' + (c.conferidos === c.total ? ' completo' : '')}>
                     {c.conferidos}/{c.total}
                   </span>

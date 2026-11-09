@@ -3,6 +3,8 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase.js';
 import { ONLINE_ATE_MS } from '../presenca.js';
 import { PESSOAS } from '../util.js';
+import { ehExtra } from '../comodos.js';
+import NomeComodo from './NomeComodo.jsx';
 
 function haQuanto(ms) {
   const min = Math.floor(ms / 60000);
@@ -65,7 +67,7 @@ export default function Equipe() {
         <p className="sub">
           {carregando
             ? 'Carregando…'
-            : `${pessoasOnline} de ${PESSOAS.length} ${pessoasOnline === 1 ? 'pessoa online' : 'pessoas online'} agora.`}
+            : `${pessoasOnline} de ${PESSOAS.length} pessoas online agora.`}
         </p>
       </div>
 
@@ -82,7 +84,9 @@ export default function Equipe() {
                       <span className="ponto" aria-hidden="true">
                         ·
                       </span>
-                      {a.comodo ? (
+                      {a.comodo && ehExtra(a.comodo) ? (
+                        <NomeComodo nome={a.comodo} />
+                      ) : a.comodo ? (
                         <span className="selo-comodo" title={a.comodo}>
                           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
                             <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinejoin="round" />

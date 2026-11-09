@@ -11,6 +11,7 @@ import Lixeira from './Lixeira.jsx';
 import Historico from './Historico.jsx';
 import Equipe from './Equipe.jsx';
 import { usePresenca } from '../presenca.js';
+import NomeComodo from './NomeComodo.jsx';
 
 export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const { itens, excluidos, comodos, proximoNumero, pendentes, carregando, erro, doCache } = useItens();
@@ -70,7 +71,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
       <>
         <div className="lista-cabecalho">
           <div className="lista-titulo">
-            <h2>{comodo.nome}</h2>
+            <h2><NomeComodo nome={comodo.nome} /></h2>
             <div className="progresso" aria-label={`${comodo.conferidos} de ${comodo.total} conferidos`}>
               <div className="progresso-barra">
                 <div style={{ width: `${comodo.total ? (comodo.conferidos / comodo.total) * 100 : 0}%` }} />
@@ -98,7 +99,15 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           Só não conferidos
         </label>
 
-        <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
+        <ListaItens
+          itens={doComodo}
+          aoEditar={(item) => setModal({ item })}
+          vazio={
+            comodo.extra && !soPendentes
+              ? 'Aqui entram objetos que estão em lugares que não existem na lista de cômodos. Toque no + para adicionar e escreva nas observações onde o objeto está.'
+              : undefined
+          }
+        />
       </>
     );
   }

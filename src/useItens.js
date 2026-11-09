@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase.js';
+import { EXTRA } from './comodos.js';
 
 /**
  * Escuta todos os itens em tempo real (são poucos: ~280).
@@ -61,10 +62,13 @@ export function useItens() {
       c.total++;
       if (it.conferido) c.conferidos++;
     }
+    // "Extra" sempre existe (mesmo vazio) e fica por último.
+    const extra = comodos.get(EXTRA.id) || { id: EXTRA.id, nome: EXTRA.nome, total: 0, conferidos: 0 };
+    comodos.delete(EXTRA.id);
     return {
       itens: ativos,
       excluidos,
-      comodos: [...comodos.values()],
+      comodos: [...comodos.values(), { ...extra, extra: true }],
       proximoNumero: maior + novos.length + 1,
       pendentes: docs.filter((d) => d.pendente).length,
     };

@@ -16,6 +16,11 @@ export function normalizarComodo(setor) {
   return s || 'Sem setor';
 }
 
+// Cômodo especial, sempre no fim da lista: para objetos que estão em lugares
+// que não existem na planilha (o cômodo de verdade vai nas observações).
+export const EXTRA = { id: 'extra', nome: 'Extra' };
+export const ehExtra = (c) => c === EXTRA.id || c === EXTRA.nome || c?.id === EXTRA.id;
+
 export function idComodo(nome) {
   return nome
     .normalize('NFD')

@@ -73,7 +73,7 @@ export function montarPlanilha(ExcelJS, itens, { logoBase64 } = {}) {
   // Logo nos dois cantos (A1 e M1), como na original
   if (logoBase64) {
     const img = wb.addImage({ base64: logoBase64, extension: 'png' });
-    const tam = { width: 190, height: 120 }; // px (proporção da logo)
+    const tam = { width: 132, height: 129 }; // px (proporção da logo: 460x448)
     ws.addImage(img, { tl: { col: 0.12, row: 0.3 }, ext: tam, editAs: 'oneCell' });
     ws.addImage(img, { tl: { col: 12.08, row: 0.3 }, ext: tam, editAs: 'oneCell' });
   }
