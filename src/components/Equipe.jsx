@@ -43,16 +43,20 @@ function usePresencas() {
 }
 
 export default function Equipe() {
-  const { aparelhos, carregando, agora, online } = usePresencas();
+  const { aparelhos, carregando, agora } = usePresencas();
 
+  // Só as sessões ativas (app aberto agora). Sessões antigas não aparecem.
   const pessoas = useMemo(
     () =>
       PESSOAS.map((nome) => {
-        const deles = aparelhos.filter((a) => a.nome === nome).sort((a, b) => b.online - a.online || b.visto - a.visto);
-        return { nome, aparelhos: deles, online: deles.some((a) => a.online), ultimo: deles[0]?.visto || 0 };
+        const deles = aparelhos.filter((a) => a.nome === nome);
+        const ativas = deles.filter((a) => a.online).sort((a, b) => b.este - a.este || b.visto - a.visto);
+        const ultimo = Math.max(0, ...deles.map((a) => a.visto));
+        return { nome, ativas, online: ativas.length > 0, ultimo, nunca: deles.length === 0 };
       }).sort((a, b) => b.online - a.online || b.ultimo - a.ultimo),
     [aparelhos],
   );
+  const pessoasOnline = pessoas.filter((p) => p.online).length;
 
   return (
     <section className="painel" aria-labelledby="titulo-equipe">
@@ -61,41 +65,53 @@ export default function Equipe() {
         <p className="sub">
           {carregando
             ? 'Carregando…'
-            : `${online} ${online === 1 ? 'aparelho online' : 'aparelhos online'} agora · ${aparelhos.length} ${aparelhos.length === 1 ? 'aparelho já entrou' : 'aparelhos já entraram'}. Online = app aberto nos últimos 3 minutos.`}
+            : `${pessoasOnline} de ${PESSOAS.length} ${pessoasOnline === 1 ? 'pessoa online' : 'pessoas online'} agora.`}
         </p>
       </div>
 
-      <div className="lista" tabIndex={0} aria-label="Pessoas e aparelhos">
+      <div className="lista" tabIndex={0} aria-label="Pessoas da equipe">
         <ul className="equipe">
-          {pessoas.map((p) => (
-            <li key={p.nome} className="pessoa">
-              <div className="pessoa-cabecalho">
-                <span className={'bolinha' + (p.online ? ' on' : '')} aria-hidden="true" />
-                <strong>{p.nome}</strong>
-                <span className="sub">
-                  {p.aparelhos.length === 0
-                    ? 'ainda não abriu o app'
-                    : `${p.aparelhos.length} ${p.aparelhos.length === 1 ? 'aparelho' : 'aparelhos'}`}
-                </span>
-              </div>
-              {p.aparelhos.length > 0 && (
-                <ul className="aparelhos">
-                  {p.aparelhos.map((a) => (
-                    <li key={a.uid}>
-                      <span className={'bolinha pequena' + (a.online ? ' on' : '')} aria-hidden="true" />
-                      <span className="aparelho-nome">
-                        {a.aparelho}
-                        {a.este && <span className="etiqueta novo">este aparelho</span>}
+          {pessoas.flatMap((p) =>
+            p.online
+              ? // Uma linha por sessão ativa: "● Pedro · Cozinha"  ...  aparelho (discreto, à direita)
+                p.ativas.map((a) => (
+                  <li key={a.uid} className="membro">
+                    <span className="bolinha on" aria-hidden="true" />
+                    <span className="membro-texto">
+                      <strong>{p.nome}</strong>
+                      <span className="ponto" aria-hidden="true">
+                        ·
                       </span>
-                      <span className={'aparelho-quando' + (a.online ? ' on' : '')}>
-                        {a.online ? 'online agora' : a.visto ? `visto ${haQuanto(agora - a.visto)}` : '—'}
+                      {a.comodo ? (
+                        <span className="selo-comodo" title={a.comodo}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                            <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinejoin="round" />
+                          </svg>
+                          <span className="selo-comodo-nome">{a.comodo}</span>
+                        </span>
+                      ) : (
+                        <span className="sub">escolhendo o cômodo</span>
+                      )}
+                    </span>
+                    <span className="membro-aparelho" title="Sistema e navegador desta sessão">
+                      {a.aparelho}
+                      {a.este && <span className="etiqueta novo">você</span>}
+                    </span>
+                  </li>
+                ))
+              : [
+                  <li key={p.nome} className="membro off">
+                    <span className="bolinha" aria-hidden="true" />
+                    <span className="membro-texto">
+                      <strong>{p.nome}</strong>
+                      <span className="ponto" aria-hidden="true">
+                        ·
                       </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
+                      <span className="sub">{p.nunca ? 'ainda não abriu o app' : `offline, visto ${haQuanto(agora - p.ultimo)}`}</span>
+                    </span>
+                  </li>,
+                ],
+          )}
         </ul>
       </div>
     </section>

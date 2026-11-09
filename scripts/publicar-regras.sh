@@ -1,5 +1,5 @@
 #!/bin/sh
-# Gera firestore.rules com o ACCESS_CODE do .env e publica no projeto real.
+# Gera firestore.rules com os códigos individuais (CODIGO_*) do .env e publica no projeto real.
 #   docker compose run --rm tools sh scripts/publicar-regras.sh
 set -e
 if [ -z "$VITE_FIREBASE_PROJECT_ID" ]; then

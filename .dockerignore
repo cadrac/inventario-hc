@@ -8,3 +8,4 @@ service-account.json
 *-firebase-adminsdk-*.json
 *.log
 teste-exportacao.xlsx
+backups

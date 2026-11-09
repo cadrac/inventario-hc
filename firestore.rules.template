@@ -1,7 +1,8 @@
 rules_version = '2';
 
 // Modelo das regras. NÃO edite firestore.rules diretamente: ele é gerado a partir
-// deste arquivo (npm run rules), trocando __ACCESS_CODE__ pelo código do grupo.
+// deste arquivo (npm run rules), trocando __CODIGO_<NOME>__ pelo código de cada pessoa
+// (variáveis CODIGO_PEDRO, CODIGO_MICHELE, CODIGO_MERCIA, CODIGO_CARLOS, CODIGO_GABRIEL).
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -10,9 +11,32 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Só quem entrou com o código do grupo tem um documento em /membros.
+    // Código individual de cada pessoa da equipe.
+    function codigos() {
+      return {
+        'Pedro': '__CODIGO_PEDRO__',
+        'Michele': '__CODIGO_MICHELE__',
+        'Mércia': '__CODIGO_MERCIA__',
+        'Carlos': '__CODIGO_CARLOS__',
+        'Gabriel': '__CODIGO_GABRIEL__'
+      };
+    }
+
+    function eu() {
+      return get(/databases/$(database)/documents/membros/$(request.auth.uid)).data;
+    }
+
+    // Membro = entrou com o código da própria pessoa E esse código ainda vale.
+    // Se um código for trocado, quem entrou com o antigo perde o acesso.
     function membro() {
-      return logado() && exists(/databases/$(database)/documents/membros/$(request.auth.uid));
+      return logado()
+        && exists(/databases/$(database)/documents/membros/$(request.auth.uid))
+        && eu().codigo == codigos()[eu().nome];
+    }
+
+    // Nome de quem está gravando (o mesmo usado para entrar).
+    function meuNome() {
+      return eu().nome;
     }
 
     function nomeValido(n) {
@@ -36,7 +60,7 @@ service cloud.firestore {
         && texto(d.observacoes, 500)
         && d.conservacaoNova in ['O', 'B', 'R', 'P', 'I']
         && d.conferido == true
-        && nomeValido(d.editadoPor)
+        && d.editadoPor == meuNome()
         && d.editadoEm == request.time;
     }
 
@@ -44,8 +68,8 @@ service cloud.firestore {
       allow read: if logado() && request.auth.uid == uid;
       allow create, update: if logado() && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['codigo', 'nome', 'entrouEm'])
-        && request.resource.data.codigo == '__ACCESS_CODE__'
         && nomeValido(request.resource.data.nome)
+        && request.resource.data.codigo == codigos()[request.resource.data.nome]
         && request.resource.data.entrouEm == request.time;
       allow delete: if false;
     }
@@ -56,7 +80,7 @@ service cloud.firestore {
       return d.diff(resource.data).affectedKeys().hasOnly(['excluido', 'excluidoPor', 'excluidoEm', 'motivoExclusao'])
         && d.excluido is bool
         && d.excluido != resource.data.get('excluido', false)
-        && nomeValido(d.excluidoPor)
+        && d.excluidoPor == meuNome()
         && d.excluidoEm == request.time
         && texto(d.motivoExclusao, 300)
         // Excluir exige motivo (mínimo 3 letras); restaurar limpa o motivo.
@@ -103,9 +127,10 @@ service cloud.firestore {
     match /presenca/{uid} {
       allow read: if membro();
       allow create, update: if membro() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['nome', 'aparelho', 'vistoEm'])
-        && request.resource.data.nome == get(/databases/$(database)/documents/membros/$(request.auth.uid)).data.nome
+        && request.resource.data.keys().hasOnly(['nome', 'aparelho', 'comodo', 'vistoEm'])
+        && request.resource.data.nome == meuNome()
         && texto(request.resource.data.aparelho, 60)
+        && (request.resource.data.get('comodo', null) == null || texto(request.resource.data.comodo, 100))
         && request.resource.data.vistoEm == request.time;
       allow delete: if false;
     }
@@ -121,7 +146,7 @@ service cloud.firestore {
         && (request.resource.data.numero == null || request.resource.data.numero is int)
         && texto(request.resource.data.comodo, 100)
         && texto(request.resource.data.especificacao, 500)
-        && nomeValido(request.resource.data.por)
+        && request.resource.data.por == meuNome()
         && request.resource.data.em == request.time
         && request.resource.data.mudancas is list
         && request.resource.data.mudancas.size() <= 10

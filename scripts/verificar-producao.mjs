@@ -29,7 +29,7 @@ try {
 } catch {
   console.log('código errado recusado: ok');
 }
-await setDoc(doc(db, 'membros', user.uid), { codigo: e.ACCESS_CODE, nome: 'Pedro', entrouEm: serverTimestamp() });
+await setDoc(doc(db, 'membros', user.uid), { codigo: (e.CODIGO_PEDRO || '').toLowerCase(), nome: 'Pedro', entrouEm: serverTimestamp() });
 console.log('código certo aceito: ok');
 const snap = await getDocs(collection(db, 'itens'));
 console.log(`itens lidos: ${snap.size}`);

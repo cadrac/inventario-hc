@@ -1,8 +1,14 @@
 # Uso local:  docker compose up --watch
 # Ferramentas: docker compose run --rm tools <comando>   (ver README.md)
 
-x-env: &env
-  ACCESS_CODE: ${ACCESS_CODE:-hora2026}
+# Códigos de TESTE (só para o emulador local). Os códigos reais ficam no .env
+# e só são usados para publicar as regras no Firebase.
+x-codigos-teste: &codigos-teste
+  CODIGO_PEDRO: teste-pedro
+  CODIGO_MICHELE: teste-michele
+  CODIGO_MERCIA: teste-mercia
+  CODIGO_CARLOS: teste-carlos
+  CODIGO_GABRIEL: teste-gabriel
 
 services:
   # Site (Vite) apontando para o emulador
@@ -45,7 +51,7 @@ services:
     image: inventario-hc-dev
     command: sh scripts/emuladores.sh
     environment:
-      <<: *env
+      <<: *codigos-teste
     ports:
       - "4000:4000"   # Emulator UI
       - "8080:8080"   # Firestore
@@ -79,7 +85,6 @@ services:
       - path: .env
         required: false
     environment:
-      <<: *env
       EMULATOR_HOST: emulators:8080
     volumes:
       - .:/app

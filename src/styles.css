@@ -507,11 +507,33 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .bolinha { width: 10px; height: 10px; border-radius: 50%; background: var(--borda-forte); flex: none; }
 .bolinha.pequena { width: 8px; height: 8px; }
 .bolinha.on { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-fundo); }
-.aparelhos { list-style: none; margin: 0 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.aparelhos li { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; flex-wrap: wrap; }
-.aparelho-nome { flex: 1; min-width: 0; }
-.aparelho-quando { color: var(--texto-suave); font-size: 0.8125rem; white-space: nowrap; }
-.aparelho-quando.on { color: var(--ok); font-weight: 500; }
+/* Uma linha por pessoa/sessão: "● Pedro · Cozinha" e o aparelho discreto à direita */
+.membro {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; border-bottom: 1px solid var(--borda); min-height: 52px;
+}
+.membro:last-child { border-bottom: none; }
+.membro-texto { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; font-size: 1rem; }
+.membro-texto > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Cômodo em selo verde com casinha, no mesmo lugar do texto */
+.selo-comodo {
+  display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%;
+  padding: 2px 9px 2px 7px; border: 1px solid var(--ok); border-radius: var(--raio);
+  background: var(--ok-fundo); color: var(--ok);
+  font-size: 0.8125rem; font-weight: 600; line-height: 1.4;
+}
+.selo-comodo svg { flex: none; }
+.selo-comodo-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.membro .ponto { color: var(--texto-suave); }
+.membro.off strong { color: var(--texto-suave); font-weight: 500; }
+.membro-aparelho {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--texto-suave); white-space: nowrap;
+}
+/* Celular estreito: o aparelho desce para baixo do nome, alinhado com o texto */
+@media (max-width: 420px) {
+  .membro-aparelho { flex-basis: 100%; margin-left: 20px; }
+}
 
 @media (max-width: 420px) {
   .status { font-size: 0.6875rem; padding: 3px 8px; }

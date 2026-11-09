@@ -21,10 +21,10 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const [aviso, setAviso] = useState('');
   const [exportando, setExportando] = useState(false);
 
-  usePresenca(nome);
   useEffect(() => guardar.gravar('inventario.comodo', comodoId), [comodoId]);
 
   const comodo = comodos?.find((c) => c.id === comodoId) || null;
+  usePresenca(nome, comodo?.nome);
   const doComodo = useMemo(
     () => (itens || []).filter((i) => i.comodoId === comodoId && (!soPendentes || !i.conferido)),
     [itens, comodoId, soPendentes],
@@ -139,8 +139,8 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           {[
             ['itens', 'Itens'],
             ['historico', 'Histórico'],
-            ['equipe', 'Equipe'],
             ['lixeira', `Lixeira${excluidos?.length ? ` (${excluidos.length})` : ''}`],
+            ['equipe', 'Equipe'],
           ].map(([id, rotulo]) => (
             <button
               key={id}
@@ -160,7 +160,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           <div className="mensagem erro">
             <p>
               {erro.code === 'permission-denied'
-                ? 'Sem permissão para ver os itens. Entre de novo com o código do grupo.'
+                ? 'Sem permissão para ver os itens. Seu código pode ter sido trocado: entre de novo com o seu código.'
                 : 'Erro ao carregar: ' + erro.message}
             </p>
             <button className="botao primario" onClick={trocarPessoa}>

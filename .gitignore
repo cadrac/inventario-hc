@@ -17,3 +17,5 @@ teste-exportacao.xlsx
 # o repositório é público. Necessária apenas para o script de importação.
 inventario.ods
 rascunho.png
+# Backups do banco (têm dados da entidade)
+backups/

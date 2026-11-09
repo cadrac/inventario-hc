@@ -21,19 +21,19 @@ export default function Entrada({ tema, alternarTema, nomeAtual, podeVoltar, vol
     e.preventDefault();
     setErro('');
     if (!nome) return setErro('Escolha o seu nome.');
-    if (!codigo.trim()) return setErro('Digite o código de acesso do grupo.');
+    if (!codigo.trim()) return setErro('Digite o seu código de acesso.');
     setEnviando(true);
     try {
       const usuario = auth.currentUser || (await esperar(signInAnonymously(auth), 15000)).user;
-      // A regra do Firestore só aceita este documento se o código estiver certo.
+      // A regra do Firestore só aceita este documento se o código for o desta pessoa.
       await esperar(
-        setDoc(doc(db, 'membros', usuario.uid), { codigo: codigo.trim(), nome, entrouEm: serverTimestamp() }),
+        setDoc(doc(db, 'membros', usuario.uid), { codigo: codigo.trim().toLowerCase(), nome, entrouEm: serverTimestamp() }),
         15000,
       );
       aoEntrar(nome, usuario.uid);
     } catch (err) {
       console.error(err);
-      if (err.code === 'permission-denied') setErro('Código incorreto. Confira com o grupo.');
+      if (err.code === 'permission-denied') setErro(`Código incorreto para ${nome}. Cada pessoa tem o seu código.`);
       else if (err.code === 'timeout' || err.code === 'unavailable' || err.code === 'auth/network-request-failed')
         setErro('Sem conexão. Para entrar pela primeira vez é preciso internet.');
       else setErro('Não foi possível entrar: ' + (err.message || err.code));
@@ -63,13 +63,15 @@ export default function Entrada({ tema, alternarTema, nomeAtual, podeVoltar, vol
         </fieldset>
 
         <label className="campo">
-          <span>Código de acesso do grupo</span>
+          <span>Seu código de acesso</span>
           <input
             type="password"
+            autoCapitalize="none"
+            spellCheck={false}
             autoComplete="off"
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
-            placeholder="Digite o código"
+            placeholder="Digite o seu código"
           />
         </label>
 

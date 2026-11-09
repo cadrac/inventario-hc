@@ -41,16 +41,22 @@ export function descreverAparelho(ua = navigator.userAgent) {
   return `${so} · ${nav}`;
 }
 
-/** Enquanto a tela principal está aberta, avisa que este aparelho está online. */
-export function usePresenca(nome) {
+/**
+ * Enquanto a tela principal está aberta, avisa que este aparelho está online
+ * e qual cômodo está sendo auditado. Ao trocar de cômodo, avisa na hora.
+ */
+export function usePresenca(nome, comodo) {
   useEffect(() => {
     function avisar() {
       const uid = auth.currentUser?.uid;
       // Sem internet ou com a aba escondida não avisa (não acumula gravações na fila).
       if (!uid || !navigator.onLine || document.visibilityState !== 'visible') return;
-      setDoc(doc(db, 'presenca', uid), { nome, aparelho: descreverAparelho(), vistoEm: serverTimestamp() }).catch((e) =>
-        console.warn('Presença não enviada:', e.code || e.message),
-      );
+      setDoc(doc(db, 'presenca', uid), {
+        nome,
+        aparelho: descreverAparelho(),
+        comodo: comodo || null,
+        vistoEm: serverTimestamp(),
+      }).catch((e) => console.warn('Presença não enviada:', e.code || e.message));
     }
     avisar();
     const t = setInterval(avisar, INTERVALO_MS);
@@ -62,5 +68,5 @@ export function usePresenca(nome) {
       document.removeEventListener('visibilitychange', visivel);
       window.removeEventListener('online', avisar);
     };
-  }, [nome]);
+  }, [nome, comodo]);
 }
