@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase.js';
-import { EXTRA } from './comodos.js';
+import { COMODOS_FIXOS, nomeFixo } from './comodos.js';
 
 /**
  * Escuta todos os itens em tempo real (são poucos: ~280).
@@ -21,11 +21,12 @@ export function useItens() {
         (snap) => {
           setDoCache(snap.metadata.fromCache);
           setDocs(
-            snap.docs.map((d) => ({
-              id: d.id,
-              ...d.data({ serverTimestamps: 'estimate' }),
-              pendente: d.metadata.hasPendingWrites,
-            })),
+            snap.docs.map((d) => {
+              const it = { id: d.id, ...d.data({ serverTimestamps: 'estimate' }), pendente: d.metadata.hasPendingWrites };
+              // Cômodo fixo renomeado (ex.: "Extra" -> "Parte externa Teatro"): usa o nome atual.
+              const fixo = nomeFixo(it.comodoId);
+              return fixo ? { ...it, comodo: fixo, setorOriginal: it.novo ? fixo : it.setorOriginal } : it;
+            }),
           );
         },
         (e) => {
@@ -62,13 +63,16 @@ export function useItens() {
       c.total++;
       if (it.conferido) c.conferidos++;
     }
-    // "Extra" sempre existe (mesmo vazio) e fica por último.
-    const extra = comodos.get(EXTRA.id) || { id: EXTRA.id, nome: EXTRA.nome, total: 0, conferidos: 0 };
-    comodos.delete(EXTRA.id);
+    // Cômodos fixos sempre existem (mesmo vazios) e ficam por último.
+    const fixos = COMODOS_FIXOS.map((c) => {
+      const atual = comodos.get(c.id) || { id: c.id, nome: c.nome, total: 0, conferidos: 0 };
+      comodos.delete(c.id);
+      return atual;
+    });
     return {
       itens: ativos,
       excluidos,
-      comodos: [...comodos.values(), { ...extra, extra: true }],
+      comodos: [...comodos.values(), ...fixos],
       proximoNumero: maior + novos.length + 1,
       pendentes: docs.filter((d) => d.pendente).length,
     };

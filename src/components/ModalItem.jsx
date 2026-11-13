@@ -3,7 +3,6 @@ import { adicionarItem, excluirItem, salvarEdicao } from '../acoes.js';
 import { lerValor, nomeConservacao, valorParaCampo } from '../util.js';
 import { BotoesConservacao, SeloConservacao } from './Conservacao.jsx';
 import CampoValor from './CampoValor.jsx';
-import NomeComodo from './NomeComodo.jsx';
 
 /** Modal de editar (item) ou adicionar (item vazio). */
 export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, avisar }) {
@@ -150,7 +149,7 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
                 </div>
                 <div>
                   <dt>Cômodo</dt>
-                  <dd><NomeComodo nome={comodo.nome} /></dd>
+                  <dd>{comodo.nome}</dd>
                 </div>
                 <div>
                   <dt>Data de aquisição</dt>
@@ -202,13 +201,8 @@ export default function ModalItem({ item, comodo, nome, numeroPrevisto, fechar, 
               </div>
 
               <label className="campo">
-                <span>{comodo.id === 'extra' ? 'Observações: onde o objeto está?' : 'Observações'}</span>
-                <textarea
-                  rows={2}
-                  value={f.observacoes}
-                  onChange={mudar('observacoes')}
-                  placeholder={comodo.id === 'extra' ? 'ex.: Depósito do 2º andar, atrás da escada…' : undefined}
-                />
+                <span>Observações</span>
+                <textarea rows={2} value={f.observacoes} onChange={mudar('observacoes')} />
               </label>
             </div>
 

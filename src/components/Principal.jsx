@@ -11,7 +11,7 @@ import Lixeira from './Lixeira.jsx';
 import Historico from './Historico.jsx';
 import Equipe from './Equipe.jsx';
 import { usePresenca } from '../presenca.js';
-import NomeComodo from './NomeComodo.jsx';
+import ModalExportar from './ModalExportar.jsx';
 
 export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const { itens, excluidos, comodos, proximoNumero, pendentes, carregando, erro, doCache } = useItens();
@@ -21,6 +21,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
   const [soPendentes, setSoPendentes] = useState(false);
   const [aviso, setAviso] = useState('');
   const [exportando, setExportando] = useState(false);
+  const [escolhendoExportacao, setEscolhendoExportacao] = useState(false);
 
   useEffect(() => guardar.gravar('inventario.comodo', comodoId), [comodoId]);
 
@@ -37,12 +38,15 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
     return () => clearTimeout(t);
   }, [aviso]);
 
-  async function exportar() {
+  async function exportar(ids) {
+    setEscolhendoExportacao(false);
     setExportando(true);
     try {
       const { baixarPlanilha } = await import('../exportar-navegador.js');
-      await baixarPlanilha(itens, excluidos);
-      setAviso('Planilha exportada.');
+      const todos = ids.length === comodos.length;
+      const escolhidos = comodos.filter((c) => ids.includes(c.id));
+      await baixarPlanilha(itens, excluidos, todos ? null : escolhidos);
+      setAviso(todos ? 'Planilha exportada.' : `Planilha exportada (${ids.length} ${ids.length === 1 ? 'cômodo' : 'cômodos'}).`);
     } catch (e) {
       console.error(e);
       setAviso('Erro ao exportar: ' + e.message);
@@ -71,7 +75,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
       <>
         <div className="lista-cabecalho">
           <div className="lista-titulo">
-            <h2><NomeComodo nome={comodo.nome} /></h2>
+            <h2>{comodo.nome}</h2>
             <div className="progresso" aria-label={`${comodo.conferidos} de ${comodo.total} conferidos`}>
               <div className="progresso-barra">
                 <div style={{ width: `${comodo.total ? (comodo.conferidos / comodo.total) * 100 : 0}%` }} />
@@ -99,15 +103,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           Só não conferidos
         </label>
 
-        <ListaItens
-          itens={doComodo}
-          aoEditar={(item) => setModal({ item })}
-          vazio={
-            comodo.extra && !soPendentes
-              ? 'Aqui entram objetos que estão em lugares que não existem na lista de cômodos. Toque no + para adicionar e escreva nas observações onde o objeto está.'
-              : undefined
-          }
-        />
+        <ListaItens itens={doComodo} aoEditar={(item) => setModal({ item })} />
       </>
     );
   }
@@ -196,7 +192,7 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           {conferidosGeral} de {totalGeral} conferidos no total
           {usandoEmulador && ' · modo de teste (emulador)'}
         </span>
-        <button type="button" className="botao secundario" onClick={exportar} disabled={!itens?.length || exportando}>
+        <button type="button" className="botao secundario" onClick={() => setEscolhendoExportacao(true)} disabled={!itens?.length || exportando}>
           {exportando ? 'Gerando…' : 'Exportar planilha'}
         </button>
       </footer>
@@ -210,6 +206,10 @@ export default function Principal({ nome, tema, alternarTema, trocarPessoa }) {
           fechar={() => setModal(null)}
           avisar={setAviso}
         />
+      )}
+
+      {escolhendoExportacao && (
+        <ModalExportar comodos={comodos} atual={comodoId} exportar={exportar} fechar={() => setEscolhendoExportacao(false)} />
       )}
 
       {aviso && (

@@ -524,16 +524,16 @@ button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 }
 .selo-comodo svg { flex: none; }
 
-/* Cômodo "Extra": selo amarelo com estrela (mesmo formato do selo verde da Equipe) */
-:root, :root[data-tema='claro'] { --extra: #7a5a00; --extra-fundo: #fff6cc; --extra-borda: #e0b400; }
-:root[data-tema='escuro'] { --extra: #f5d90a; --extra-fundo: #2a2405; --extra-borda: #f5d90a; }
-.selo-extra {
-  display: inline-flex; align-items: center; gap: 0.35em; vertical-align: middle;
-  padding: 0.05em 0.55em 0.05em 0.45em; border: 1px solid var(--extra-borda); border-radius: var(--raio);
-  background: var(--extra-fundo); color: var(--extra); font-weight: 600; white-space: nowrap; line-height: 1.35;
-}
-.selo-extra svg { flex: none; }
-.membro-texto .selo-extra { font-size: 0.8125rem; }
+/* Modal de exportar: escolha dos cômodos */
+.modal-corpo.exportar { gap: 14px; }
+.exportar-atalhos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.exportar-atalhos .sub { margin-left: auto; font-size: 0.875rem; }
+.exportar-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--borda); border-radius: var(--raio); }
+.exportar-lista li + li { border-top: 1px solid var(--borda); }
+.exportar-opcao { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 12px; cursor: pointer; }
+.exportar-opcao input { width: 20px; height: 20px; flex: none; accent-color: var(--primaria); }
+.exportar-opcao .nome { flex: 1; min-width: 0; }
+@media (hover: hover) { .exportar-opcao:hover { background: var(--superficie-2); } }
 .lista.vazia { text-align: center; line-height: 1.5; }
 .selo-comodo-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .membro .ponto { color: var(--texto-suave); }

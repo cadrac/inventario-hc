@@ -16,10 +16,15 @@ export function normalizarComodo(setor) {
   return s || 'Sem setor';
 }
 
-// Cômodo especial, sempre no fim da lista: para objetos que estão em lugares
-// que não existem na planilha (o cômodo de verdade vai nas observações).
-export const EXTRA = { id: 'extra', nome: 'Extra' };
-export const ehExtra = (c) => c === EXTRA.id || c === EXTRA.nome || c?.id === EXTRA.id;
+// Cômodos que não estavam na planilha original. Aparecem sempre no fim da lista,
+// nesta ordem, mesmo sem itens. O id "extra" é do antigo cômodo "Extra":
+// os itens que já estavam lá passam a aparecer com o nome novo.
+export const COMODOS_FIXOS = [
+  { id: 'brinquedoteca', nome: 'Brinquedoteca' },
+  { id: 'extra', nome: 'Parte externa Teatro' },
+];
+const NOME_FIXO = Object.fromEntries(COMODOS_FIXOS.map((c) => [c.id, c.nome]));
+export const nomeFixo = (id) => NOME_FIXO[id];
 
 export function idComodo(nome) {
   return nome
