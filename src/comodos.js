@@ -22,6 +22,7 @@ export function normalizarComodo(setor) {
 export const COMODOS_FIXOS = [
   { id: 'brinquedoteca', nome: 'Brinquedoteca' },
   { id: 'extra', nome: 'Parte externa Teatro' },
+  { id: 'cantina-do-teatro', nome: 'Cantina do Teatro' },
 ];
 const NOME_FIXO = Object.fromEntries(COMODOS_FIXOS.map((c) => [c.id, c.nome]));
 export const nomeFixo = (id) => NOME_FIXO[id];
