@@ -4,6 +4,8 @@ Web app para conferir o inventário cômodo por cômodo, em vários celulares ao
 React + Vite, Firebase (Firestore + Auth anônima), publicado na Vercel.
 O Docker é usado **só para desenvolvimento local**.
 
+Copyright (c) 2026 Pedro. Todos os direitos reservados. Projeto autoral: não é permitido copiar, modificar, distribuir ou usar este código sem autorização por escrito do autor.
+
 ---
 
 ## 1. Rodar localmente (Docker + emulador)
